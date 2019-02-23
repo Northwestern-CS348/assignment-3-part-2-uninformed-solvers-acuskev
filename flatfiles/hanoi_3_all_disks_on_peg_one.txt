@@ -16,3 +16,34 @@ fact: (pred obj1 obj2)
 rule: ((pred obj1 obj2) (pred obj2 obj3)) -> (pred obj1 obj3)
 
 """
+fact: (inst disk1 disk)
+fact: (inst disk2 disk)
+fact: (inst disk3 disk)
+fact: (inst peg1 peg)
+fact: (inst peg2 peg)
+fact: (inst peg3 peg)
+
+fact: (on disk1 peg1)
+fact: (on disk2 peg1)
+fact: (on disk3 peg1)
+
+fact: (above disk1 disk2)
+fact: (above disk2 disk3)
+
+fact: (top disk1 peg1)
+fact: (empty peg2)
+fact: (empty peg3)
+
+#rule: ((on ?x ?y) (on ?y ?z)) -> (on ?x ?z)
+rule: ((larger ?x ?y) (larger ?y ?z)) -> (larger ?x ?z)
+rule: ((on ?x ?p) (on ?y ?p) (inst ?p peg)) -> (samepeg ?x ?y ?p)
+rule: ((samepeg ?x ?y ?p) (larger ?y ?x)) -> (on ?x ?y)
+
+#rule: ((samepeg ?x ?y ?p) (on ?x ?y)) -> (nottop ?y ?p)
+#rule: ((on ?x ?y)) -> (larger ?y ?x)
+
+#rule: ~(nottop ?x ?p) -> (top ?x ?p) #why doesn't this work??
+#rule: ((inst ?p peg) ~(on ?x ?p)) -> (empty ?p) #why doesn't this work??
+
+rule: ((top ?x ?p) (top ?a ?b) (larger ?a ?x)) -> (movable ?x ?p ?b)
+rule: ((top ?x ?p) (empty ?b)) -> (movable ?x ?p ?b)

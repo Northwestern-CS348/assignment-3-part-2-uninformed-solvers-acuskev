@@ -34,7 +34,31 @@ class TowerOfHanoiGame(GameMaster):
             A Tuple of Tuples that represent the game state
         """
         ### student code goes here
-        pass
+        p1 = []
+        p2 = []
+        p3 = []
+        bindings1 = self.kb.kb_ask(parse_input("fact: (on ?disk peg1)"))
+        if bindings1:
+            for binding in bindings1:
+                disknum = binding.bindings[0].constant.element[-1]
+                p1.append(int(disknum))
+            p1.sort()
+
+        bindings2 = self.kb.kb_ask(parse_input("fact: (on ?disk peg2)"))
+        if bindings2:
+            for binding in bindings2:
+                disknum = binding.bindings[0].constant.element[-1]
+                p2.append(int(disknum))
+            p2.sort()
+        bindings3 = self.kb.kb_ask(parse_input("fact: (on ?disk peg3)"))
+        if bindings3:
+            for binding in bindings3:
+                disknum = binding.bindings[0].constant.element[-1]
+                p3.append(int(disknum))
+            p3.sort()
+
+        return (tuple(p1), tuple(p2), tuple(p3))
+
 
     def makeMove(self, movable_statement):
         """
@@ -53,7 +77,35 @@ class TowerOfHanoiGame(GameMaster):
             None
         """
         ### Student code goes here
-        pass
+        terms = movable_statement.terms
+        disk = terms[0].term.element
+        pegx = terms[1].term.element
+        pegy = terms[2].term.element
+        #check for empty pegy
+        if not self.kb.kb_ask(parse_input('fact: (empty ' + pegy + ')')):
+            #not empty
+            old_pegy_bindings = self.kb.kb_ask(parse_input('fact: (top ?disk ' + pegy + ')'))
+            old_pegy_top = old_pegy_bindings[0].bindings_dict['?disk']
+            self.kb.kb_retract(parse_input('fact: (top ' + old_pegy_top + ' ' + pegy + ')'))
+            self.kb.kb_assert(parse_input('fact: (above ' + disk + ' ' + old_pegy_top + ')'))
+        else:
+            #pegy was empty
+            self.kb.kb_retract(parse_input('fact: (empty ' + pegy + ')'))
+        #check for presence of disk below top disk
+        above_bindings = self.kb.kb_ask(parse_input('fact: (above ' + disk + ' ?disk)'))
+        if above_bindings:
+            #top disk was above another
+            new_pegx_top = above_bindings[0].bindings_dict['?disk']
+            self.kb.kb_retract(parse_input('fact: (above ' + disk + ' ' + new_pegx_top + ')'))
+            self.kb.kb_assert(parse_input('fact: (top ' + new_pegx_top + ' ' + pegx + ')'))
+        else:
+            #top disk was the only disk on pegx, which should now be empty
+            self.kb.kb_assert(parse_input('fact: (empty ' + pegx + ')'))
+
+        self.kb.kb_retract(parse_input('fact: (on ' + disk + ' ' + pegx + ')'))
+        self.kb.kb_retract(parse_input('fact: (top ' + disk + ' ' + pegx + ')'))
+        self.kb.kb_assert(parse_input('fact: (top ' + disk + ' ' + pegy + ')'))
+        self.kb.kb_assert(parse_input('fact: (on ' + disk + ' ' + pegy + ')'))
 
     def reverseMove(self, movable_statement):
         """
@@ -100,7 +152,37 @@ class Puzzle8Game(GameMaster):
             A Tuple of Tuples that represent the game state
         """
         ### Student code goes here
-        pass
+        row1 = [29, 29, 29]
+        bindings1 = self.kb.kb_ask(parse_input("fact: (tile ?tile ?col pos1)"))
+        if bindings1:
+            for binding in bindings1:
+                if binding.bindings[0].constant.element == 'empty':
+                    row1[int(binding.bindings[1].constant.element[3]) - 1] = -1
+                else:
+                    row1[int(binding.bindings[1].constant.element[3]) - 1] = int(binding.bindings[0].constant.element[4])
+
+        row2 = [29, 29, 29]
+        bindings2 = self.kb.kb_ask(parse_input("fact: (tile ?tile ?col pos2)"))
+        if bindings2:
+            for binding in bindings2:
+                if binding.bindings[0].constant.element == 'empty':
+                    row2[int(binding.bindings[1].constant.element[3]) - 1] = -1
+                else:
+                    row2[int(binding.bindings[1].constant.element[3]) - 1] = int(binding.bindings[0].constant.element[4])
+
+        row3 = [29, 29, 29]
+        bindings3 = self.kb.kb_ask(parse_input("fact: (tile ?tile ?col pos3)"))
+        if bindings3:
+            for binding in bindings3:
+                if binding.bindings[0].constant.element == 'empty':
+                    row3[int(binding.bindings[1].constant.element[3]) - 1] = -1
+                else:
+                    row3[int(binding.bindings[1].constant.element[3]) - 1] = int(binding.bindings[0].constant.element[4])
+
+        row1 = tuple(row1)
+        row2 = tuple(row2)
+        row3 = tuple(row3)
+        return (row1, row2, row3)
 
     def makeMove(self, movable_statement):
         """
@@ -119,7 +201,19 @@ class Puzzle8Game(GameMaster):
             None
         """
         ### Student code goes here
-        pass
+        tile = movable_statement.terms[0].term.element
+        col1 = movable_statement.terms[1].term.element
+        row1 = movable_statement.terms[2].term.element
+        col2 = movable_statement.terms[3].term.element
+        row2 = movable_statement.terms[4].term.element
+        oldfact = parse_input('fact: (tile ' + tile + ' ' + col1 + ' ' + row1 + ')')
+        oldfact2 = parse_input('fact: (tile empty ' + col2 + ' ' + row2 + ')')
+        newfact = parse_input('fact: (tile ' + tile + ' ' + col2 + ' ' + row2 + ')')
+        newfact2 = parse_input('fact: (tile empty ' + col1 + ' ' + row1 + ')')
+        self.kb.kb_retract(oldfact)
+        self.kb.kb_retract(oldfact2)
+        self.kb.kb_assert(newfact)
+        self.kb.kb_assert(newfact2)
 
     def reverseMove(self, movable_statement):
         """
