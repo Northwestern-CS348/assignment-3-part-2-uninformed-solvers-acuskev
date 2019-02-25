@@ -130,14 +130,14 @@ class SolverBFS(UninformedSolver):
         #add all unvisited children to queue for BFS
         for child in child_list:
             if self.visited[child] == False:
-                #add to head of queue
+                #add to head of queue, with latest entries appended to left and first out from right 
                 self.queue.appendleft(child)
-        #return tail of queue
+        #return first out element of queue
         next_state = self.queue.pop()
         if next_state.depth == self.currentState.depth:
             prior_state = next_state
         else: 
-            #next_state can only be deeper
+            #next_state can only be deeper relative to current state, append its moves to the next_moves backlog and move up ancestry
             next_moves.append(next_state.requiredMovable)
             prior_state = next_state.parent
         while self.currentState != prior_state:
