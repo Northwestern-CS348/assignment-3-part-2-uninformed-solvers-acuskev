@@ -81,29 +81,68 @@ class TowerOfHanoiGame(GameMaster):
         disk = terms[0].term.element
         pegx = terms[1].term.element
         pegy = terms[2].term.element
+        r_oldytop = False
+        r_emptypegy = False
+        r_a_newxtop = False
+        a_newytop = False
+        a_emptyx = False
         #check for empty pegy
+        # lx = self.getGameState()
+        # print(lx)
+        # if lx == ((2,), (3,), (1,)):
+        #     for i in self.kb.facts:
+        #         print(i.statement)
+        #     x = self.kb.kb_ask(parse_input('fact: (movable disk2 peg2 peg1)'))
+        #     if x:
+        #         print('lll')
         if not self.kb.kb_ask(parse_input('fact: (empty ' + pegy + ')')):
             #not empty
             old_pegy_bindings = self.kb.kb_ask(parse_input('fact: (top ?disk ' + pegy + ')'))
+            # if not old_pegy_bindings:
+            #     print('destination peg ' + pegy + ' not empty, but ???')
+            #     lx = self.getGameState()
+            #     #print(lx)
+            #     for i in self.kb.facts:
+            #         pass
+            #         #print(i)
             old_pegy_top = old_pegy_bindings[0].bindings_dict['?disk']
-            self.kb.kb_retract(parse_input('fact: (top ' + old_pegy_top + ' ' + pegy + ')'))
-            self.kb.kb_assert(parse_input('fact: (above ' + disk + ' ' + old_pegy_top + ')'))
+            # lx = self.getGameState()
+            # if lx == ((2, 3), (1,), ()):
+            #     print(disk)
+            #     print(pegx)
+            #     print(old_pegy_top)
+            #     print(pegy)
+            #     for i in self.kb.facts:
+            #         print(i)
+            r_oldytop = True
+            a_newytop = True
+            #self.kb.kb_assert(parse_input('fact: (above ' + disk + ' ' + old_pegy_top + ')'))
         else:
             #pegy was empty
-            self.kb.kb_retract(parse_input('fact: (empty ' + pegy + ')'))
+            r_emptypegy = True
         #check for presence of disk below top disk
         above_bindings = self.kb.kb_ask(parse_input('fact: (above ' + disk + ' ?disk)'))
         if above_bindings:
             #top disk was above another
             new_pegx_top = above_bindings[0].bindings_dict['?disk']
-            self.kb.kb_retract(parse_input('fact: (above ' + disk + ' ' + new_pegx_top + ')'))
-            self.kb.kb_assert(parse_input('fact: (top ' + new_pegx_top + ' ' + pegx + ')'))
+            r_a_newxtop = True
         else:
             #top disk was the only disk on pegx, which should now be empty
-            self.kb.kb_assert(parse_input('fact: (empty ' + pegx + ')'))
+            a_emptyx = True
 
         self.kb.kb_retract(parse_input('fact: (on ' + disk + ' ' + pegx + ')'))
         self.kb.kb_retract(parse_input('fact: (top ' + disk + ' ' + pegx + ')'))
+        if r_oldytop:
+            self.kb.kb_retract(parse_input('fact: (top ' + old_pegy_top + ' ' + pegy + ')'))
+        if r_emptypegy:
+            self.kb.kb_retract(parse_input('fact: (empty ' + pegy + ')'))
+        if r_a_newxtop:
+            self.kb.kb_retract(parse_input('fact: (above ' + disk + ' ' + new_pegx_top + ')'))
+            self.kb.kb_assert(parse_input('fact: (top ' + new_pegx_top + ' ' + pegx + ')'))
+        if a_newytop:
+            self.kb.kb_assert(parse_input('fact: (above ' + disk + ' ' + old_pegy_top + ')'))
+        if a_emptyx:
+            self.kb.kb_assert(parse_input('fact: (empty ' + pegx + ')'))
         self.kb.kb_assert(parse_input('fact: (top ' + disk + ' ' + pegy + ')'))
         self.kb.kb_assert(parse_input('fact: (on ' + disk + ' ' + pegy + ')'))
 
